@@ -1,0 +1,26 @@
+{
+  "name": "amd-group-test",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --config .prettierrc 'src/**/*.{js,ts}' --write"
+  },
+  "engines": {
+    "bun": ">=1.0.30"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hapi/hapi": "^21.3.7",
+    "hapi": "^18.1.0",
+    "joi": "^17.12.2",
+    "nats": "^2.19.0",
+    "pg": "^8.11.3",
+    "prettier": "^3.2.5",
+    "typeorm": "^0.3.20"
+  }
+}
