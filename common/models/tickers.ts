@@ -4,9 +4,4 @@ const EURTicker: string = 'EUR'
 
 const TICKERS_MODEL = [RUBTicker, USDTicker, EURTicker]
 
-export {
-    RUBTicker,
-    USDTicker,
-    EURTicker,
-    TICKERS_MODEL
-}
+export { RUBTicker, USDTicker, EURTicker, TICKERS_MODEL }

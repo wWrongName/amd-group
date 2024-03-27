@@ -2,7 +2,9 @@ version: '3'
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "${HAPI_PORT}:${HAPI_PORT}"
     environment:
@@ -12,9 +14,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
     depends_on:
-      - db
-  db:
-    image: postgres:latest
+      - amd_postgres
+  amd_postgres:
+    image: postgres:15.4
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}

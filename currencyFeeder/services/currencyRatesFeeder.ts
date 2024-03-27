@@ -1,6 +1,6 @@
 import { TICKERS_MODEL } from '../../common/models/tickers'
 import { CurrencyRateSchema } from '../schemas/currencySchemas'
-import { CurrencyRate, Token } from '../../common/models/currencies'
+import { CurrencyRate, Token } from '../../common/models/CurrencyRate'
 import { AppDataSource } from '../../common/configs/typeORMConfig'
 
 const CURRENCYFREAKS_URL = process.env.CURRENCYFREAKS_URL
@@ -8,30 +8,30 @@ const CURRENCYFREAKS_TOKEN = process.env.CURRENCYFREAKS_TOKEN
 
 async function getLastRate(): Promise<Date> {
     const currencyRateRepository = AppDataSource.getRepository(CurrencyRate)
-    const lastRecord = await currencyRateRepository.findOne({
-        order: {
-            date: 'DESC',
-        },
+    const lastRecord = await currencyRateRepository.find({
+        order: { date: 'DESC' },
+        take: 1,
     })
-    if (lastRecord) return lastRecord.date
+    const desiredRecord = lastRecord[0]
+    if (desiredRecord) return desiredRecord.date
     return new Date(0)
 }
 
-async function createToken(ticker: string) {
+async function createToken(ticker: string): Promise<Token> {
     const tokenRepository = AppDataSource.getRepository(Token)
     const newToken = new Token()
     newToken.ticker = ticker
     return tokenRepository.save(newToken)
 }
 
-async function getTokenByTicker(ticker: string) {
+async function getTokenByTicker(ticker: string): Promise<Token> {
     const tokenRepository = AppDataSource.getRepository(Token)
     const token = await tokenRepository.findOne({ where: { ticker: ticker } })
     if (!token) return await createToken(ticker)
     return token
 }
 
-async function getTokensAll(rates: Record<string, any>) {
+async function getTokensAll(rates: Record<string, any>): Promise<Record<string, any>> {
     let tokens: Record<string, any> = {}
     for (let ticker of Object.keys(rates)) {
         tokens[ticker] = await getTokenByTicker(ticker)
@@ -39,9 +39,8 @@ async function getTokensAll(rates: Record<string, any>) {
     return tokens
 }
 
-async function writeCurrencyRates(rates: Record<string, any>) {
+async function writeCurrencyRates(rates: Record<string, any>, date: Date): Promise<void> {
     const tokens = await getTokensAll(rates)
-    const date = new Date()
 
     await AppDataSource.transaction('READ COMMITTED', async transactionalEntityManager => {
         for (let ticker in rates) {
@@ -73,10 +72,10 @@ export class CurrencyRatesFeeder {
         const diffTime = currentTime.getTime() - lastUpdTime.getTime()
         const hour = 60 * 60 * 1000
         const diffHours = diffTime / hour
-        console.trace(`Last update: ${diffHours}h ago`)
+        console.trace(`Last update: ${Math.floor(diffHours)}h ago`)
 
-        if (diffHours > 12) return true
-        return hours === 12 && minutes === 0
+        if (diffHours > 24) return true
+        return hours === 24 && minutes === 0
     }
 
     private async getLastUpdTime(): Promise<Date> {
@@ -85,15 +84,15 @@ export class CurrencyRatesFeeder {
 
     private async updateCurrencyRates(): Promise<void> {
         try {
-            const rates = await this.fetchCurrencyRates()
-            await writeCurrencyRates(rates)
+            const [rates, date] = await this.fetchCurrencyRates()
+            await writeCurrencyRates(rates, date)
         } catch (error) {
             console.error(error)
         }
     }
 
-    private async fetchCurrencyRates(): Promise<object> {
-        const targetUrl = `${CURRENCYFREAKS_URL}/latest&apikey=${CURRENCYFREAKS_TOKEN}&symbols=${this.SYMBOLS}`
+    private async fetchCurrencyRates(): Promise<[object, Date]> {
+        const targetUrl = `${CURRENCYFREAKS_URL}/latest?apikey=${CURRENCYFREAKS_TOKEN}&symbols=${this.SYMBOLS}`
         console.trace('Sending request to fetch currency rates:', targetUrl)
 
         const response = await fetch(targetUrl)
@@ -101,6 +100,6 @@ export class CurrencyRatesFeeder {
         console.trace('Extracting the currency rates response:', currencyData)
 
         await CurrencyRateSchema.validateAsync(currencyData.rates)
-        return currencyData.rates
+        return [currencyData.rates, currencyData.date]
     }
 }

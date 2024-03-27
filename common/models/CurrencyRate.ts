@@ -1,15 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm'
+import { Token } from './Token'
 
 @Entity()
-export class Token {
-    @PrimaryGeneratedColumn()
-    id!: number
-
-    @Column({ unique: true })
-    ticker!: string
-}
-
-export class CurrencyRate {
+class CurrencyRate {
     @PrimaryGeneratedColumn()
     id!: number
 
@@ -24,3 +17,5 @@ export class CurrencyRate {
     @Column({ type: 'decimal', precision: 10, scale: 4 })
     usdRate!: number
 }
+
+export { CurrencyRate, Token }

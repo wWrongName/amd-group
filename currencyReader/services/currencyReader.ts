@@ -1,13 +1,15 @@
+import { LessThanOrEqual } from 'typeorm'
 import { AppDataSource } from '../../common/configs/typeORMConfig'
-import { CurrencyRate } from '../../common/models/currencies'
+import { CurrencyRate } from '../../common/models/CurrencyRate'
 import { USDTicker } from '../../common/models/tickers'
 
 async function getCurrencyRatesByDate(date: Date): Promise<CurrencyRate[]> {
     const currencyRateRepository = AppDataSource.getRepository(CurrencyRate)
     const records = await currencyRateRepository.find({
         where: {
-            date: date,
+            date: LessThanOrEqual(date),
         },
+        relations: ['token'],
     })
     return records
 }
@@ -16,13 +18,13 @@ function filterRecordsByTickers(records: CurrencyRate[], tickers: string[]): Cur
     return records.filter(record => tickers.includes(record.token.ticker))
 }
 
-function sortRecordsByTickers(records: CurrencyRate[], tickers: string[]): (CurrencyRate)[] {
+function sortRecordsByTickers(records: CurrencyRate[], tickers: string[]): (CurrencyRate | undefined)[] {
     return tickers.map(ticker => records.find(record => record.token.ticker === ticker))
 }
 
 function countCrossRate(baseToken: CurrencyRate, targetToken: CurrencyRate): number {
-    const targetInUsd = 1 / targetToken.usdRate
-    const crossRate = targetInUsd * baseToken.usdRate
+    const targetInUsd = 1 / baseToken.usdRate
+    const crossRate = targetInUsd * targetToken.usdRate
     return crossRate
 }
 
@@ -42,7 +44,11 @@ export class CurrencyRatesReader {
         return answer
     }
 
-    async getCurrencyPairRateByDate(date: Date, targetTicker: string, baseTicker: string = USDTicker) {
+    async getCurrencyPairRateByDate(
+        date: Date,
+        targetTicker: string,
+        baseTicker: string = USDTicker,
+    ): Promise<Record<string, string | Date>> {
         const records = await getCurrencyRatesByDate(date)
 
         const answer: Record<string, string | Date> = {}
@@ -52,8 +58,10 @@ export class CurrencyRatesReader {
 
         const unsorted = filterRecordsByTickers(records, [baseTicker, targetTicker])
         const [baseToken, targetToken] = sortRecordsByTickers(unsorted, [baseTicker, targetTicker])
-        
-        answer.targetRate = countCrossRate(baseToken, targetToken).toString()
-        return answer
+
+        if (baseToken && targetToken) {
+            answer.targetRate = countCrossRate(baseToken, targetToken).toString()
+            return answer
+        } else return {}
     }
 }
