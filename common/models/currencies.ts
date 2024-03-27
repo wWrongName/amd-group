@@ -1,19 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from 'typeorm'
 
 @Entity()
-export class CurrencyRate extends BaseEntity {
+export class Token {
     @PrimaryGeneratedColumn()
-    id: number
+    id!: number
 
-    @Column()
-    datetime_create: Date
+    @Column({ unique: true })
+    ticker!: string
+}
 
-    @Column()
-    datetime_update: Date
+export class CurrencyRate {
+    @PrimaryGeneratedColumn()
+    id!: number
 
-    @Column({ type: 'enum', enum: ['RUB', 'EUR', 'USD'] })
-    currency: string
+    @ManyToOne(() => Token)
+    @JoinColumn()
+    token!: Token
 
-    @Column({ type: 'float' })
-    rate: number
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Index()
+    date!: Date
+
+    @Column({ type: 'decimal', precision: 10, scale: 4 })
+    usdRate!: number
 }

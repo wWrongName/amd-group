@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm'
-import { CurrencyRate } from '../models/currencies'
+import { CurrencyRate, Ticker } from '../models/currencies'
 import { join } from 'node:path'
 
 const DB_HOST: string = process.env.DB_HOST ?? 'localhost'
@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
     database: DB_NAME,
     synchronize: true,
     logging: true,
-    entities: [CurrencyRate],
+    entities: [CurrencyRate, Ticker],
     subscribers: [],
     migrations: [join(__dirname, '../migrations/*')],
 })
