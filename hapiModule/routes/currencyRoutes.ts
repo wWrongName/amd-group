@@ -1,10 +1,8 @@
 import Joi from 'joi'
 import Hapi from '@hapi/hapi'
+import { getCurrenciesAll, getCurrenciesCustom } from '../schemas/currencySchemas'
 
 const HAPI_PORT: number = Number(process.env.HAPI_PORT) ?? 3000
-
-// TODO - put into models?
-const TICKERS_MODEL = ['RUB', 'USD', 'EUR']
 
 export const initHAPI = async () => {
     const server = Hapi.server({
@@ -24,10 +22,7 @@ export const initHAPI = async () => {
         },
         options: {
             validate: {
-                // TODO - put into schemas
-                query: Joi.object({
-                    date: Joi.date().iso().required(),
-                }),
+                query: getCurrenciesAll
             },
         },
     });
@@ -44,20 +39,15 @@ export const initHAPI = async () => {
         },
         options: {
             validate: {
-                // TODO - put into schemas
-                query: Joi.object({
-                    base: Joi.string().valid(TICKERS_MODEL).required(),
-                    target: Joi.string().valid(TICKERS_MODEL).required(),
-                    date: Joi.date().iso()
-                }),
+                query: getCurrenciesCustom,
             },
         },
     });
 
     await server.start()
-    console.log('Server running on %s', server.info.uri)
-}
+    console.info('Server running on', server.info.uri)
 
-process.on('unhandledRejection', (error) => {
-    console.fatal(error)
-})
+    process.on('unhandledRejection', (error) => {
+        console.fatal(error)
+    })    
+}
