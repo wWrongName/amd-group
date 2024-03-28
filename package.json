@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "typeorm": "typeorm-ts-node-commonjs",
-    "format": "prettier --config .prettierrc './**/*.{js,ts}' --write"
+    "format": "prettier --config .prettierrc './**/*.{js,ts}' --write",
+    "build": "docker-compose -f docker-compose.yml --env-file .env up --build"
   },
   "engines": {
     "bun": ">=1.0.30"

@@ -18,7 +18,10 @@ async function currenciesCustomHandler(request: { query: { base: any; target: an
     return await currencyRatesReader.getCurrencyPairRateByDate(date, target, base)
 }
 
-export const initHAPI = async () => {
+/**
+ * Initializes the currency reader based on HAPI framework.
+ */
+export const initCurrencyReader = async () => {
     const server = Hapi.server({
         port: HAPI_PORT,
         host: '0.0.0.0',

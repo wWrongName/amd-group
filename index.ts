@@ -1,19 +1,14 @@
-import Logger from './logger.js'
-new Logger({
-    log_level: 'TRACE',
-    colorized_log_level: true,
-})
-
 import { AppDataSource } from './common/configs/typeORMConfig.js'
+import { initCurrencyFeeder } from './currencyUpdater/index.js'
+import { initCurrencyReader } from './currencyReader/index.js'
+import { initLogger } from './iLogger.js'
 
-import { currencyRatesFeeder } from './currencyFeeder/index.js'
-import { initHAPI } from './currencyReader/index.js'
-// import { initNATS } from './nats.js'
-
-AppDataSource.initialize().then(() => {
-    initHAPI()
-    // initNATS()
-    currencyRatesFeeder.run()
-}).catch(error => {
-    console.error(error)
-})
+initLogger()
+AppDataSource.initialize()
+    .then(() => {
+        initCurrencyReader()
+        initCurrencyFeeder()
+    })
+    .catch(error => {
+        console.error(error)
+    })

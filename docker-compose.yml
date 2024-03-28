@@ -23,3 +23,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "${DB_PORT}:${DB_PORT}"
+  amd_nats:
+    image: 'nats:latest'
+    ports:
+      - '${NATS_PORT}:${NATS_PORT}'

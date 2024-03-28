@@ -31,6 +31,10 @@ function countCrossRate(baseToken: CurrencyRate, targetToken: CurrencyRate): num
 export class CurrencyRatesReader {
     async run() {}
 
+    /**
+     * Returns a map of currency ticker symbols to their exchange rates against the USD for a given date.
+     * @param date the date for which to retrieve the exchange rates
+     */
     async getCurrenciesByDate(date: Date): Promise<Record<string, string | Date>> {
         const records = await getCurrencyRatesByDate(date)
 
@@ -44,6 +48,12 @@ export class CurrencyRatesReader {
         return answer
     }
 
+    /**
+     * Returns the exchange rate between two currencies for a given date.
+     * @param date the date for which to retrieve the exchange rates
+     * @param targetTicker the ticker symbol of the target currency
+     * @param baseTicker the ticker symbol of the base currency (defaults to USD)
+     */
     async getCurrencyPairRateByDate(
         date: Date,
         targetTicker: string,

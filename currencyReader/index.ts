@@ -1,1 +1,1 @@
-export { initHAPI } from './routes/currencyRoutes.js'
+export { initCurrencyReader } from './routes/currencyRoutes.js'
